@@ -1,0 +1,25 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+.venv/
+.vscode/
+build/
+*.csv
+dist/
+.pytest_cache/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Arduino / ESP32
+*.elf
+*.bin
+*.map
+firmware/arduino/**/build/
+.pio/
+
+# Notebooks
+*.ipynb_checkpoints/
+
