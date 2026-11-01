@@ -5,12 +5,15 @@ Minimal free-space optical (FSO) digital link for **5 m indoor LOS** demo using 
 ## 1) Overview
 
 This implementation is intentionally scoped for a one-day prototype:
+
 - PHY: **OOK + Manchester** with **38 kHz carrier bursts** at default **2 kbps** (VS1838B-compatible).
 - Framing: preamble + sync + length + payload + CRC16.
 - Robustness: adaptive thresholding on RX (EWMA baseline + hysteresis), CRC integrity checks, optional Hamming(7,4) module.
 - Host tools: Python GUI for real-time RSSI proxy, BER trend, eye-like overlay, and CSV logging.
+- Offline tooling: streaming raw-frame validation and CSV session reports for field-run comparison.
 
 Why this design fits your goal:
+
 - Low-cost and off-the-shelf (ESP32 + IR parts).
 - Jam-resistant medium (optical LOS, narrow beam).
 - Compatible with VS1838B digital IR receiver module using the same host protocol/GUI.
@@ -36,24 +39,29 @@ flowchart LR
 - `firmware/arduino/` Arduino IDE TX/RX sketches for ESP32-WROOM dev boards
 - `firmware/tx/` ESP-IDF TX app
 - `firmware/rx/` ESP-IDF RX app
-- `host/` Python GUI + serial protocol + logging
-- `docs/` wiring + test procedure
+- `host/` Python GUI, serial protocol, frame decoder, logging, and reports
+- `docs/` wiring, test procedure, and telemetry-analysis guide
 
 Detailed documentation:
+
 - `docs/code_structure.md` code architecture and data flow
 - `docs/run_guide.md` full setup/flash/run instructions
 - `docs/hardware.md` wiring and hardware sizing notes
 - `docs/test_plan.md` validation and BER/range checklist
+- `docs/telemetry_analysis.md` CSV-report and raw-frame decoding workflow
 
 ## 3) Build & Run
 
 ### Firmware (Arduino IDE, recommended)
+
 - Open `firmware/arduino/tx/tx.ino`, select `ESP32 Dev Module`, upload to TX board.
 - Open `firmware/arduino/rx/rx.ino`, select `ESP32 Dev Module`, upload to RX board.
 - Use `115200` serial monitor baud for both.
 
 ### Firmware (ESP-IDF, optional legacy)
+
 Build TX:
+
 ```powershell
 cd firmware/tx
 idf.py set-target esp32
@@ -62,6 +70,7 @@ idf.py -p COMx flash monitor
 ```
 
 Build RX:
+
 ```powershell
 cd firmware/rx
 idf.py set-target esp32
@@ -70,10 +79,24 @@ idf.py -p COMy flash monitor
 ```
 
 ### Python Host
+
 ```powershell
 pip install -r requirements.txt
 python host/gui_app.py
 ```
+
+### Analyze a recorded session
+
+The GUI writes a CSV recording through `CsvLogger`. From `host/`, summarize a run with:
+
+```powershell
+python telemetry_report.py path\to\session.csv
+python telemetry_report.py path\to\session.csv --json
+```
+
+The report calculates received-frame count, CRC pass rate, elapsed time, BER
+statistics, and the RSSI-proxy range. See `docs/telemetry_analysis.md` for
+the record schema and raw-stream decoder API.
 
 ## 4) Quick Wiring (details in docs)
 
@@ -89,6 +112,7 @@ python host/gui_app.py
 ## 5) Demo Testing
 
 Follow `docs/test_plan.md` for:
+
 - bench bring-up
 - 1 m to 5 m BER sweep
 - ambient light stress
